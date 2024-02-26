@@ -6,13 +6,20 @@ import os
 #pip install beautifulsoup4
 #pip install requests
 #pip install csv
-#https://beautiful-soup-4.readthedocs.io/en/latest/index.html?highlight=download
-#https://www.pro-football-reference.com/years/2023/passing.htm
+
 class Webscraper:
-    
+
     def __init__(self, url: str, table_id: str) -> None:
         self.url = url
         self.table_id = table_id
+
+    def scrape_all(self, filename):
+        with open(filename, 'r') as file:
+            for line in file:
+                url, table_id = line.strip().split(',')
+                self.url = url
+                self.table_id = table_id
+                self.scrape_table()
 
     def scrape_table(self):
         headers = {
@@ -44,10 +51,15 @@ class Webscraper:
                 if len(row_data) > 1:
                     table_data.append(row_data)
 
-            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'table_data.csv'), 'w', newline='', encoding='utf-8') as file:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'{self.table_id}.csv'), 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerows(table_data)
         else:
             print(f"Failed to retrieve data: HTTP {response.status_code}")
-#temp = Webscraper("https://www.pro-football-reference.com/years/2023/passing.htm","passing")
-#Webscraper.scrape_table(temp)
+
+def main():
+        scraper = Webscraper('', '')  # Create a Webscraper object with empty url and table_id
+        scraper.scrape_all('scrape.txt')  # Call the scrape_all method with the filename
+
+if __name__ == "__main__":
+    main()

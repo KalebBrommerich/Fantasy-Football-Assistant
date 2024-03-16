@@ -15,7 +15,7 @@ class Webscraper:
     def get_table(self, html_content):
         soup = BeautifulSoup(html_content, 'html.parser')
         table = soup.find('table', id=self.table_id)
-        print(table)
+        #print(table)
         return table
         
     def get_headers(self, table):
@@ -39,7 +39,7 @@ class Webscraper:
     
     def scrape_table_to_csv(self, table_id, csv_file_path='table_data.csv'):
         html_content = self.get_html_content()
-        table = self.get_table(html_content, table_id)
+        table = self.get_table(html_content)
         headers = self.get_headers(table)
         rows = self.get_rows(table)
         df = self.get_dataframe(headers, rows)

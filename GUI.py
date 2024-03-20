@@ -127,7 +127,37 @@ class ModifiersPopup(QtWidgets.QDialog):
 
         self.layout = QtWidgets.QVBoxLayout()
         message = QtWidgets.QLabel("Enter the point modifiers for your league:")
+
+        self.enter1 =  QtWidgets.QHBoxLayout()
+        txt1 = QtWidgets.QLabel("Something: ")
+        in1 = QtWidgets.QLineEdit()
+        self.enter1.addWidget(txt1)
+        self.enter1.addWidget(in1)
+
+        self.enter2 =  QtWidgets.QHBoxLayout()
+        txt2 = QtWidgets.QLabel("Something: ")
+        in2 = QtWidgets.QLineEdit()
+        self.enter2.addWidget(txt2)
+        self.enter2.addWidget(in2)
+
+        self.enter3 =  QtWidgets.QHBoxLayout()
+        txt3 = QtWidgets.QLabel("Something: ")
+        in3 = QtWidgets.QLineEdit()
+        self.enter3.addWidget(txt3)
+        self.enter3.addWidget(in3)
+
+        self.enter4 =  QtWidgets.QHBoxLayout()
+        txt4 = QtWidgets.QLabel("Something: ")
+        in4 = QtWidgets.QLineEdit()
+        self.enter4.addWidget(txt4)
+        self.enter4.addWidget(in4)
+
+
         self.layout.addWidget(message)
+        self.layout.addLayout(self.enter1)
+        self.layout.addLayout(self.enter2)
+        self.layout.addLayout(self.enter3)
+        self.layout.addLayout(self.enter4)
         self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
         self.setLayout(self.layout)
 
@@ -138,5 +168,4 @@ if __name__ == "__main__":
     widget.setMinimumSize(800,600)
     widget.showMaximized()
     
-
     sys.exit(app.exec())

@@ -42,11 +42,6 @@ class Webscraper:
         table = self.get_table(html_content)
         headers = self.get_headers(table)
         rows = self.get_rows(table)
-        print(len(rows))
-        for r in range(len(rows)):
-            if rows[r][0]=="Rk":
-                rows.pop(r)
-            print(rows[r][0])
         df = self.get_dataframe(headers, rows)
         df.to_csv(csv_file_path, index=False)
         print(f"Data saved to {csv_file_path}")

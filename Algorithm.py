@@ -3,7 +3,3 @@ class Algorithm:
     def __init__(self) -> None:
         pass
 
-#DataPareser inherits Algorithm  
-class DataParser(Algorithm):
-    def __init__(self) -> None:
-        pass

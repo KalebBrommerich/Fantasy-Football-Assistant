@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import os,pathlib
 import pandas as pd
 
 class Webscraper:
@@ -10,12 +11,13 @@ class Webscraper:
 
     def get_html_content(self):
         response = requests.get(self.url)
+        print(self.url)
         return response.content
 
     def get_table(self, html_content):
         soup = BeautifulSoup(html_content, 'html.parser')
         table = soup.find('table', id=self.table_id)
-        print(table)
+        #print(table)
         return table
         
     def get_headers(self, table):
@@ -39,10 +41,14 @@ class Webscraper:
     
     def scrape_table_to_csv(self, table_id, csv_file_path='table_data.csv'):
         html_content = self.get_html_content()
-        table = self.get_table(html_content, table_id)
+        table = self.get_table(html_content)
+        #the print slows it down a lot, if it's not slowed your traffic will be blocked for an hour if you scrape the past 20 years
+        print(html_content)
         headers = self.get_headers(table)
         rows = self.get_rows(table)
         df = self.get_dataframe(headers, rows)
+        if not os.path.exists(str(pathlib.Path.cwd())+"\\"+csv_file_path.split('\\')[0]):
+            os.mkdir(str(pathlib.Path.cwd())+"\\"+csv_file_path.split('\\')[0])
         df.to_csv(csv_file_path, index=False)
         print(f"Data saved to {csv_file_path}")
 
@@ -78,4 +84,5 @@ if __name__ == "__main__":
     # id = "receiving"
     # url = "https://www.pro-football-reference.com/years/2023/scrimmage.htm"
     # id = "receiving_and_rushing"
-    main(url,id)
+    # main(url,id)
+    print("stuff was commented out")

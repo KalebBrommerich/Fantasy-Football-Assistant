@@ -17,7 +17,7 @@ class Algorithm:
                     with open(root+"\\"+str(year)+"\\"+file, 'r') as csvfile:
                         reader = csv.reader(csvfile)
                         for row in reader:
-                            print(row)                
+                            print(row) 
             year+= 1
             #train or something idk
         return 1

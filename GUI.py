@@ -6,6 +6,7 @@
 #https://doc.qt.io/qtforpython-6/index.html
 
 import Webscraper as ws
+import WebscraperExperts as wse
 from PySide6 import QtCore, QtWidgets, QtGui
 import sys, time, asyncio, csv, threading, time, os
 
@@ -30,9 +31,19 @@ class MyWidget(QtWidgets.QWidget):
         self.table.showGrid
         #init, just having it read a file for now
         self.loadTable(self.table,".\\passing.csv" )
-       
 
+        tables = QtWidgets.QHBoxLayout()
+        self.table2 = QtWidgets.QTableWidget()
+        self.table2.setAlternatingRowColors(True)
+        self.table2.showGrid
+
+        
+        #init, just having it read a file for now
+        self.loadTable(self.table2,".\\ranking-table.csv" )
+        self.table2.setColumnWidth(1,150)
         tables.addWidget(self.table)
+        tables.addWidget(self.table2)
+
 
         self.layout.addWidget(self.TableTitle,alignment=QtCore.Qt.AlignCenter)
         self.layout.addLayout(tables)
@@ -73,6 +84,10 @@ class MyWidget(QtWidgets.QWidget):
             t4.start()
             print("started 4",year)
 
+            print("started experts")
+            wse.WebscraperExperts("https://www.fantasypros.com/nfl/fantasy-football-rankings.php","ranking-table").scrape_table_to_csv("ranking-table","ranking-table.csv")
+            print("finished experts")
+            
             t1.join()
             print("Joined 1",year)
             t2.join()
@@ -81,6 +96,8 @@ class MyWidget(QtWidgets.QWidget):
             print("Joined 3",year)
             t4.join()
             print("Joined 4",year)   
+
+
 
     def clearCache(self):
         time.sleep(1)

@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import os,pathlib
 import pandas as pd
+import numpy as np
 
-class Webscraper:
+class WebscraperExperts:
 
     def __init__(self, url, id):
         self.url = url
@@ -21,18 +22,40 @@ class Webscraper:
         return table
         
     def get_headers(self, table):
-        header_rows = table.find('thead').find_all('tr')
-        # Assume the last row of headers is the one that directly corresponds to data columns - this fixes the 2 layered header issue 
-        final_header_row = header_rows[-1]
-        headers = [header.text for header in final_header_row.find_all('th')]
-        print(headers)
-        return headers
+        header_rows = table.find('thead').find('tr').find_all('th')
+        headerNum = 0
+        unparsedHeaders = []
+        for row in header_rows:
+            headerNum+=1
+            if(headerNum <=2 ):
+                unparsedHeaders.append(row.get_text().strip())
+                continue
+            unparsedHeaders.append(row.find('span').get_text())
+        headerNum = 0
+        parsedHeaders = []
+        for header in unparsedHeaders:
+            headerNum+=1
+            if(headerNum <=2 ):
+                parsedHeaders.append(header.lower().capitalize())
+                continue
+            nameOnly = header.split()[0] +" "+ header.split()[1]
+            parsedHeaders.append(nameOnly)
+        #print(parsedHeaders)
+        return parsedHeaders
 
 
     def get_rows(self, table):
         rows = []
+        #rows.append()
         for row in table.find('tbody').find_all('tr'):
-            cols = [ele.text.strip() for ele in row.find_all(['th','td'])]
+            cols = []
+            colNum = 0
+            for ele in row.find_all(['td']):
+                colNum +=1
+                if colNum == 2:
+                    cols.append(ele.find(class_="everything-but-mobile js-sort-field").get_text().strip())
+                else:
+                    cols.append(ele.get_text().strip())
             rows.append(cols)
         return rows
 
@@ -44,11 +67,9 @@ class Webscraper:
         html_content = self.get_html_content()
         table = self.get_table(html_content)
         #the print slows it down a lot, if it's not slowed your traffic will be blocked for an hour if you scrape the past 20 years
-        #print(html_content)
         headers = self.get_headers(table)
         rows = self.get_rows(table)
         df = self.get_dataframe(headers, rows)
-        
         if not os.path.exists(str(pathlib.Path.cwd())+"\\"+csv_file_path.split('\\')[0]):
             os.mkdir(str(pathlib.Path.cwd())+"\\"+csv_file_path.split('\\')[0])
         df.to_csv(csv_file_path, index=False)
@@ -56,7 +77,7 @@ class Webscraper:
 
 def main(url, id):
     # Initialize the Webscraper with the URL - this will be used to get the HTML content
-    scraper = Webscraper(url,id)
+    scraper = WebscraperExperts(url,id)
 
     # Get HTML content - this will be used to extract the table
     html_content = scraper.get_html_content()
@@ -68,22 +89,17 @@ def main(url, id):
     headers = scraper.get_headers(table)
     rows = scraper.get_rows(table)
 
-    # Convert to DataFrame - pandas is used to convert the data to a DataFrame
+    # # Convert to DataFrame - pandas is used to convert the data to a DataFrame
     df = scraper.get_dataframe(headers, rows)
 
-    # Save the DataFrame to a CSV file
+    # # Save the DataFrame to a CSV file
     csv_file_path = id+'.csv'
     df.to_csv(csv_file_path, index=False)
     print(f"Data saved to {csv_file_path}")
+    print("done")
 
 if __name__ == "__main__":
-    # Example URL - replace with the actual URL you intend to scrape
-    # url = "https://www.pro-football-reference.com/years/2023/passing.htm"
-    # id = "passing"
-    # url = "https://www.pro-football-reference.com/years/2023/rushing.htm"
-    # id = "rushing"
-    # url = "https://www.pro-football-reference.com/years/2023/receiving.htm"
-    # id = "receiving"
-    url = "https://www.pro-football-reference.com/years/2023/scrimmage.htm"
-    id = "receiving_and_rushing"
+    #Example URL - replace with the actual URL you intend to scrape
+    url = "https://www.fantasypros.com/nfl/fantasy-football-rankings.php"
+    id = "ranking-table"
     main(url,id)

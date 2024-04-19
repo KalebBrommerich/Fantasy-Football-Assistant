@@ -6,8 +6,9 @@
 #https://doc.qt.io/qtforpython-6/index.html
 
 import Webscraper as ws
+import WebscraperExperts as wse
 from PySide6 import QtCore, QtWidgets, QtGui
-import sys, time, asyncio, csv, threading, time
+import sys, time, asyncio, csv, threading, time, os
 
 class MyWidget(QtWidgets.QWidget):
 
@@ -16,9 +17,11 @@ class MyWidget(QtWidgets.QWidget):
         self.setWindowTitle("Fantasy Football Assistant")
         self.ScrapeBtn = QtWidgets.QPushButton("Scrape tables")
         self.ClearCacheBtn = QtWidgets.QPushButton("Clear cache")
+        self.LoadArchivedDataBtn = QtWidgets.QPushButton("Load Archived Data")
         self.GenRankingsBtn = QtWidgets.QPushButton("Generate rankings")
         self.ViewRankingsBtn = QtWidgets.QPushButton("Compare players") 
         self.EnterModifiersBtn = QtWidgets.QPushButton("Enter modifiers") 
+        self.TableTitle = QtWidgets.QLabel("Predictions for next year")
         
         self.layout = QtWidgets.QVBoxLayout(self)
 
@@ -28,17 +31,21 @@ class MyWidget(QtWidgets.QWidget):
         self.table.showGrid
         #init, just having it read a file for now
         self.loadTable(self.table,".\\passing.csv" )
-       
 
+        tables = QtWidgets.QHBoxLayout()
         self.table2 = QtWidgets.QTableWidget()
         self.table2.setAlternatingRowColors(True)
         self.table2.showGrid
-        #init, just having it read a file for now
-        self.loadTable(self.table2,".\\rushing.csv" )
 
+        
+        #init, just having it read a file for now
+        self.loadTable(self.table2,".\\ranking-table.csv" )
+        self.table2.setColumnWidth(1,150)
         tables.addWidget(self.table)
         tables.addWidget(self.table2)
 
+
+        self.layout.addWidget(self.TableTitle,alignment=QtCore.Qt.AlignCenter)
         self.layout.addLayout(tables)
 
         home = QtWidgets.QHBoxLayout()
@@ -46,10 +53,13 @@ class MyWidget(QtWidgets.QWidget):
         home.addWidget(self.ClearCacheBtn, alignment=QtCore.Qt.AlignBottom)     
         home.addWidget(self.GenRankingsBtn, alignment=QtCore.Qt.AlignBottom) 
         home.addWidget(self.EnterModifiersBtn, alignment=QtCore.Qt.AlignBottom)
+        home.addWidget(self.LoadArchivedDataBtn, alignment=QtCore.Qt.AlignBottom)
+
         self.layout.addLayout(home)
         
         self.ScrapeBtn.clicked.connect(self.scrape)
         self.EnterModifiersBtn.clicked.connect(self.modPopup)
+        self.LoadArchivedDataBtn.clicked.connect(self.arcPopup)
 
     @QtCore.Slot()
 
@@ -74,6 +84,10 @@ class MyWidget(QtWidgets.QWidget):
             t4.start()
             print("started 4",year)
 
+            print("started experts")
+            wse.WebscraperExperts("https://www.fantasypros.com/nfl/fantasy-football-rankings.php","ranking-table").scrape_table_to_csv("ranking-table","ranking-table.csv")
+            print("finished experts")
+            
             t1.join()
             print("Joined 1",year)
             t2.join()
@@ -83,6 +97,8 @@ class MyWidget(QtWidgets.QWidget):
             t4.join()
             print("Joined 4",year)   
 
+
+
     def clearCache(self):
         time.sleep(1)
     def genRankings(self):
@@ -91,6 +107,21 @@ class MyWidget(QtWidgets.QWidget):
     def modPopup(self):
         dlg = ModifiersPopup()
         dlg.exec()
+    def arcPopup(self):
+        print(self.TableTitle.text())
+        dlg = ArchivedDataPopup(True if self.TableTitle.text() == "Predictions for next year" else False)
+        dlg.exec()
+        if(dlg.year != ""):
+            if(dlg.usePred.isChecked()):
+               #load predictions result
+               self.TableTitle.setText("Predictions for next year")
+            else:
+                #load archived data that was selected
+                self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.year+"\\"+dlg.dataset+".csv")
+                self.TableTitle.setText(dlg.year+ " " + dlg.dataset)
+
+
+            
 
     def loadTable(self, table, file):
         with open(file ,encoding="utf-8") as csvFile:
@@ -108,6 +139,59 @@ class MyWidget(QtWidgets.QWidget):
                 #nested loop
                 for colIdx, colData in enumerate(rowData):
                     table.setItem(rowIdx-offset,colIdx,QtWidgets.QTableWidgetItem(colData))
+class ArchivedDataPopup(QtWidgets.QDialog):
+
+    def __init__(self,UsePred):
+        super().__init__()
+        print(UsePred)
+        self.year = ""
+        self.dataset =""
+        QBtn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        message = QtWidgets.QLabel("Select year and data you want to view")
+        
+        self.enter1 =  QtWidgets.QHBoxLayout()
+        self.txt1 = QtWidgets.QLabel("Year: ")
+        self.in1 = QtWidgets.QComboBox()
+        self.in1.addItems( os.listdir(os.curdir+"\\TrainingData"))
+        self.enter1.addWidget(self.txt1)
+        self.enter1.addWidget(self.in1)
+
+        self.enter2 =  QtWidgets.QHBoxLayout()
+        self.txt2 = QtWidgets.QLabel("Data set: ")
+        self.in2 = QtWidgets.QComboBox()
+        self.in2.addItems(["passing","reveiving","rushing"])
+        self.enter2.addWidget(self.txt2)
+        self.enter2.addWidget(self.in2)
+
+        self.usePred = QtWidgets.QRadioButton("Display predictions for next year", self)
+        self.useArchived = QtWidgets.QRadioButton("Display archived data", self)
+        if(UsePred):
+            self.usePred.setChecked(True)
+        else:
+            self.useArchived.setChecked(True)
+
+        self.layout.addWidget(message)
+        self.layout.addLayout(self.enter1)
+        self.layout.addLayout(self.enter2)
+        self.layout.addWidget(self.usePred,alignment=QtCore.Qt.AlignLeft)
+        self.layout.addWidget(self.useArchived,alignment=QtCore.Qt.AlignLeft)
+        self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
+        
+        self.setLayout(self.layout)
+    def accept(self):
+        print("Accept")
+        self.year = self.in1.currentText()
+        self.dataset = self.in2.currentText()
+        print(self.year,self.dataset)
+        self.close()
+
+
 #inheritance
 class ModifiersPopup(QtWidgets.QDialog):
     def __init__(self):
@@ -166,9 +250,6 @@ class ModifiersPopup(QtWidgets.QDialog):
 
     def accept(self):
         print("accept")
-        self.close()
-    def reject(self):
-        print("reject")
         self.close()
 
 if __name__ == "__main__":

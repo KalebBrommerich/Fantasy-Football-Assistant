@@ -1,0 +1,7 @@
+Rushing/ReceivingTD=6
+Rushing/ReceivingYDs=0.1
+PassingTD=4
+PointPerReception=0.5
+PassingInterceptionsThrown=-1
+Passing Yard=0.04
+

@@ -1,12 +1,25 @@
 import pandas as pd
 
+"""
+data_prep_prep file
+This file is used to clean the data before it is used in the prediction model classes,
+it requires more data work to be able to predict, but this is a good clean start that can be viewed by the user. 
+"""
+
 def remove_repeated_headers(df):
+    """
+    Remove rows that contain the same values as the column headers.
+    They repeat around every 30 rows in the untouched data
+    """
     header = df.columns
     for col in header:
         df = df[df[col] != col]
     return df
 
 def calculate_fantasy_points(df, file_path):
+    """
+    Calculate fantasy points based on the file name. Needs to take ScoringConfig.txt as input. 
+    """
     # Convert the 'Yds' and 'TD' columns to numeric type, ignoring errors
     df['Yds'] = pd.to_numeric(df['Yds'], errors='coerce')
     df['TD'] = pd.to_numeric(df['TD'], errors='coerce')
@@ -15,14 +28,14 @@ def calculate_fantasy_points(df, file_path):
     if 'passing' in file_path:
         df['Fantasy_Points'] = df['Yds'] / 25 + df['TD'] * 4
     elif 'rushing' in file_path:
-        df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6
+        df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6 
     elif 'receiving' in file_path:
         df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6
     return df
 
 def convert_percent_to_float(df):
     """
-    Convert percentage string columns to float. Assumes percentages are represented as '85.0%'
+    Convert percentage string columns to float. Assumes percentages are represented as '85.0'
     and converts them to float format 0.85.
     """
     percent_columns = [col for col in df.columns if '%' in col]
@@ -38,30 +51,28 @@ def round_dataframe(df):
     df[numeric_cols.columns] = numeric_cols.round(3)
     return df
 
-
-
 def process_and_merge(files_and_years,years):
     passing_data = []
     rushing_data = []
     receiving_data = []
 
     for file_path, year in files_and_years:
-        df = pd.read_csv(file_path)
-        df = remove_repeated_headers(df)
-        df = convert_percent_to_float(df)
-        df['Year'] = year
-        if 'passing' in file_path:
+        df = pd.read_csv(file_path) #Read CSV
+        df = remove_repeated_headers(df) #Remove Headers
+        df = convert_percent_to_float(df) #Convert percentage columns to float
+        df['Year'] = year #Add year column
+        if 'passing' in file_path: #If passing, then filter out bad passing columns and filter for QB
             df = df[df['Pos'] == 'QB']
             df.drop(['4QC', 'GWD', 'QBrec'], axis=1, inplace=True)
-        if 'rushing' in file_path:
+        if 'rushing' in file_path: #If rushing, then for filter for RB
             df = df[df['Pos'] == 'RB']
-        df.drop(['Pos', 'Tm', 'Rk'], axis=1, inplace=True)
-        df = df.dropna()
-        df = calculate_fantasy_points(df, file_path)
-        df = df.loc[df['Fantasy_Points'] >= 100]
-        df = round_dataframe(df)
+        df.drop(['Pos', 'Tm', 'Rk'], axis=1, inplace=True) #Drop string based columns (they dont help in prediction)
+        df = df.dropna() #Drop rows with missing values
+        df = calculate_fantasy_points(df, file_path) #Calculate Fantasy Points
+        df = df.loc[df['Fantasy_Points'] >= 100] #Filter out players with less than 100 fantasy points, these outliers break the MinMaxScaler
+        df = round_dataframe(df) #Round all numeric columns to 3 decimal places, maybe not important, but it looks nice
 
-        if "passing" in file_path:
+        if "passing" in file_path: #this is for the merge function, appending the dfs to a list to be combined 
             passing_data.append(df)
         elif "rushing" in file_path:
             rushing_data.append(df)
@@ -75,21 +86,19 @@ def process_and_merge(files_and_years,years):
         # Ensure to sort by player and year in descending order
         combined_df.sort_values(by=['Player', 'Year'], ascending=[True, False], inplace=True)
 
-        # Apply a filter to ensure only players with at least 3 entries are considered
-        filtered_df = combined_df.groupby('Player').filter(lambda x: len(x) >= 3)
+        # Apply a filter to ensure only players with at least 3 entries are considered, this is for the learning model, 
+        filtered_df = combined_df.groupby('Player').filter(lambda x: len(x) >= 3)      #would require a lot more data science to work without this 
 
         # After filtering, take the top 3 entries
-        filtered_df = filtered_df.groupby('Player').head(3)
+        filtered_df = filtered_df.groupby('Player').head(3) #I am kind of unsure about what this line does... but I am scared to delete it
         
         # Sort by player and year in ascending order for the final output
         filtered_df.sort_values(by=['Player', 'Year'], ascending=[True, True], inplace=True)
         
-        filtered_df.to_csv(f'combined_{name}_{years}.csv', index=False)
-
-
-
+        filtered_df.to_csv(f'combined_{name}_{years}.csv', index=False) #Save the final output to a CSV file
 
 # List of file paths and corresponding years
+#Currently provided prediction data 
 files_and_years = [
     (r'TrainingData/2018/passing.csv', 2018),
     (r'TrainingData/2018/rushing.csv', 2018),
@@ -110,6 +119,8 @@ files_and_years = [
     (r'TrainingData/2023/rushing.csv', 2023),
     (r'TrainingData/2023/receiving.csv', 2023)
 ]
+
+#Currently provided training data
 # List of file paths and corresponding years
 files_and_years2 = [
     (r'TrainingData/2012/passing.csv', 2012),

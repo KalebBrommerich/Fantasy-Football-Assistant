@@ -6,7 +6,33 @@ import torch.optim as optim
 #an additional argument for the validation loader. and some tweaks in the driver code.
 
 def train_model(model, train_loader, criterion, optimizer, num_epochs):
-    for epoch in range(num_epochs):
+    epoch =0
+    #for epoch in range(num_epochs):
+    model.train()  # Set the model to training mode
+    total_train_loss = 0
+        
+    for inputs, labels in train_loader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        total_train_loss += loss.item()
+        
+        # After each epoch, evaluate on the validation set
+        # model.eval()  # Set the model to evaluation mode
+        # total_val_loss = 0
+        # with torch.no_grad():
+        #     for inputs, labels in val_loader:
+        #         outputs = model(inputs)
+        #         val_loss = criterion(outputs, labels)
+        #         total_val_loss += val_loss.item()
+        
+        # Printing average losses
+    print(f'Epoch {epoch+1}/{num_epochs}, Training Loss: {total_train_loss/len(train_loader)}')
+              #, Validation Loss: {total_val_loss/len(val_loader)}')
+    while((total_train_loss/len(train_loader)) >.1):
+    #for epoch in range(num_epochs):
         model.train()  # Set the model to training mode
         total_train_loss = 0
         
@@ -28,7 +54,8 @@ def train_model(model, train_loader, criterion, optimizer, num_epochs):
         #         total_val_loss += val_loss.item()
         
         # Printing average losses
-        print(f'Epoch {epoch+1}/{num_epochs}, Training Loss: {total_train_loss/len(train_loader)}')
+        epoch +=1
+        print(f'Epoch {epoch}, Training Loss: {total_train_loss/len(train_loader)}')
               #, Validation Loss: {total_val_loss/len(val_loader)}')
     
     

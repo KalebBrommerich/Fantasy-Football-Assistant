@@ -27,7 +27,8 @@ class MyWidget(QtWidgets.QWidget):
         self.GenRankingsBtn = QtWidgets.QPushButton("Generate rankings")
         self.ViewRankingsBtn = QtWidgets.QPushButton("Compare players") 
         self.EnterModifiersBtn = QtWidgets.QPushButton("Enter modifiers") 
-        self.TableTitle = QtWidgets.QLabel("Predictions for next year")
+        self.TableTitleLeft = QtWidgets.QLabel("Predictions for next year")
+        self.TableTitleRight = QtWidgets.QLabel("Expert consensus")
         
         self.layout = QtWidgets.QVBoxLayout(self)
 
@@ -50,8 +51,11 @@ class MyWidget(QtWidgets.QWidget):
         tables.addWidget(self.table)
         tables.addWidget(self.table2)
 
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(self.TableTitleLeft,alignment=QtCore.Qt.AlignCenter)
+        header.addWidget(self.TableTitleRight,alignment=QtCore.Qt.AlignCenter)
 
-        self.layout.addWidget(self.TableTitle,alignment=QtCore.Qt.AlignCenter)
+        self.layout.addLayout(header)
         self.layout.addLayout(tables)
 
         home = QtWidgets.QHBoxLayout()
@@ -112,6 +116,7 @@ class MyWidget(QtWidgets.QWidget):
         time.sleep(1)
 
     def modPopup(self):
+        self.readScoringConfig()
         dlg = ModifiersPopup(self.RushingReceivingTD,self.RushingReceivingYD,self.PassingTD, self.PPR,self.Interceptions,self.PassingYd)
         dlg.exec()
         if(dlg.accepted):
@@ -176,6 +181,8 @@ class ArchivedDataPopup(QtWidgets.QDialog):
 
     def __init__(self,UsePred):
         super().__init__()
+        self.setWindowTitle("Viewing Mode")
+
         print(UsePred)
         self.year = ""
         self.dataset =""

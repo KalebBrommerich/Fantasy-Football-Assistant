@@ -20,7 +20,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     train_loader = DataLoader(PlayerStatsDataset(X, y), batch_size=32, shuffle=True)
     #val_loader = DataLoader(PlayerStatsDataset(X_val, y_val), batch_size=32, shuffle=False)
-    train_model(model, train_loader, criterion, optimizer, num_epochs=20)
+    train_model(model, train_loader, criterion, optimizer, num_epochs=40)
     torch.save(model.state_dict(), 'model.pth')
 
     model_path = 'model.pth'

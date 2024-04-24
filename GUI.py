@@ -14,12 +14,6 @@ class MyWidget(QtWidgets.QWidget):
 
     def __init__(self):
         super().__init__()
-        self.RushingReceivingTD = 0
-        self.RushingReceivingYD = 0
-        self.PassingTD = 0
-        self.PPR = 0
-        self.Interceptions = 0
-        self.PassingYd = 0
         self.setWindowTitle("Fantasy Football Assistant")
         self.ScrapeBtn = QtWidgets.QPushButton("Scrape tables")
         self.ClearCacheBtn = QtWidgets.QPushButton("Clear cache")
@@ -66,7 +60,6 @@ class MyWidget(QtWidgets.QWidget):
         self.ScrapeBtn.clicked.connect(self.scrape)
         self.EnterModifiersBtn.clicked.connect(self.modPopup)
         self.LoadArchivedDataBtn.clicked.connect(self.arcPopup)
-        self.readScoringConfig()
 
     @QtCore.Slot()
 
@@ -112,16 +105,13 @@ class MyWidget(QtWidgets.QWidget):
         time.sleep(1)
 
     def modPopup(self):
-        dlg = ModifiersPopup(self.RushingReceivingTD,self.RushingReceivingYD,self.PassingTD, self.PPR,self.Interceptions,self.PassingYd)
+        dlg = ModifiersPopup()
         dlg.exec()
-        if(dlg.accepted):
-            self.writeScoringConfig(dlg.in1.text(),dlg.in2.text(),dlg.in3.text(),dlg.in4.text(),dlg.in5.text(),dlg.in6.text())
-
     def arcPopup(self):
         print(self.TableTitle.text())
         dlg = ArchivedDataPopup(True if self.TableTitle.text() == "Predictions for next year" else False)
         dlg.exec()
-        if(dlg.accepted):
+        if(dlg.year != ""):
             if(dlg.usePred.isChecked()):
                #load predictions result
                self.TableTitle.setText("Predictions for next year")
@@ -130,29 +120,6 @@ class MyWidget(QtWidgets.QWidget):
                 self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.year+"\\"+dlg.dataset+".csv")
                 self.TableTitle.setText(dlg.year+ " " + dlg.dataset)
 
-    def readScoringConfig(self):
-        fileReader =  open(".//ScoringConfig.txt" ,encoding="utf-8")
-        self.RushingReceivingTD = fileReader.readline().split('=')[1]
-        self.RushingReceivingYD = fileReader.readline().split('=')[1]
-        self.PassingTD = fileReader.readline().split('=')[1]
-        self.PPR = fileReader.readline().split('=')[1]
-        self.Interceptions = fileReader.readline().split('=')[1]
-        self.PassingYd = fileReader.readline().split('=')[1]
-        fileReader.close()
-
-    def writeScoringConfig(self,RushingReceivingTD,RushingReceivingYD,PassingTD,PPR,Interceptions,PassingYd):
-        fileWriter =  open(".//ScoringConfig.txt" ,encoding="utf-8",mode='w')
-        fileWriter.write("Rushing/ReceivingTD="+str(RushingReceivingTD)+"\n")
-        fileWriter.write("Rushing/ReceivingYDs="+str(RushingReceivingYD)+"\n")
-        fileWriter.write("PassingTD="+str(PassingTD)+"\n")
-        fileWriter.write("PointPerReception="+str(PPR)+"\n")
-        fileWriter.write("PassingInterceptionsThrown="+str(Interceptions)+"\n")
-        fileWriter.write("Passing Yard="+str(PassingYd))
-        fileWriter.flush()
-        fileWriter.close()
-
-        
-            
 
             
 
@@ -227,7 +194,7 @@ class ArchivedDataPopup(QtWidgets.QDialog):
 
 #inheritance
 class ModifiersPopup(QtWidgets.QDialog):
-    def __init__(self,RRTD,RRYD,PTD,PPR,I,PY):
+    def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Point Modifiers")
@@ -245,61 +212,39 @@ class ModifiersPopup(QtWidgets.QDialog):
 
         #https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QLineEdit.html#PySide6.QtWidgets.PySide6.QtWidgets.QLineEdit.inputMask
         self.enter1 =  QtWidgets.QHBoxLayout()
-        self.txt1 = QtWidgets.QLabel("Rushing/Receiving TD: ")
-        self.in1 = QtWidgets.QLineEdit()
-        self.in1.setInputMask("00")
-        self.in1.setText(str(RRTD))
-        self.enter1.addWidget(self.txt1)
-        self.enter1.addWidget(self.in1,alignment=QtCore.Qt.AlignRight)
+        txt1 = QtWidgets.QLabel("Something: ")
+        in1 = QtWidgets.QLineEdit()
+        in1.setInputMask("00")
+        self.enter1.addWidget(txt1)
+        self.enter1.addWidget(in1)
 
         self.enter2 =  QtWidgets.QHBoxLayout()
-        self.txt2 = QtWidgets.QLabel("Rushing/Receiving YD's: ")
-        self.in2 = QtWidgets.QLineEdit()
-        self.in2.setInputMask("00")
-        self.in2.setText(str(RRYD))
-        self.enter2.addWidget(self.txt2)
-        self.enter2.addWidget(self.in2,alignment=QtCore.Qt.AlignRight)
+        txt2 = QtWidgets.QLabel("Something: ")
+        in2 = QtWidgets.QLineEdit()
+        in2.setInputMask("00")
+        self.enter2.addWidget(txt2)
+        self.enter2.addWidget(in2)
 
         self.enter3 =  QtWidgets.QHBoxLayout()
-        self.txt3 = QtWidgets.QLabel("Passing TD: ")
-        self.in3 = QtWidgets.QLineEdit()
-        self.in3.setInputMask("00")
-        self.in3.setText(str(PTD))
-        self.enter3.addWidget(self.txt3)
-        self.enter3.addWidget(self.in3,alignment=QtCore.Qt.AlignRight)
+        txt3 = QtWidgets.QLabel("Something: ")
+        in3 = QtWidgets.QLineEdit()
+        in3.setInputMask("00")
+        self.enter3.addWidget(txt3)
+        self.enter3.addWidget(in3)
 
         self.enter4 =  QtWidgets.QHBoxLayout()
-        self.txt4 = QtWidgets.QLabel("Points Per Reception: ")
-        self.in4 = QtWidgets.QLineEdit()
-        self.in4.setInputMask("0.00")
-        self.in4.setText(str(PPR))
-        self.enter4.addWidget(self.txt4)
-        self.enter4.addWidget(self.in4,alignment=QtCore.Qt.AlignRight)
+        txt4 = QtWidgets.QLabel("Something: ")
+        in4 = QtWidgets.QLineEdit()
+        in4.setInputMask("00")
+        self.enter4.addWidget(txt4)
+        self.enter4.addWidget(in4)
 
-        self.enter5 =  QtWidgets.QHBoxLayout()
-        self.txt5 = QtWidgets.QLabel("Interceptions: ")
-        self.in5 = QtWidgets.QLineEdit()
-        self.in5.setInputMask("-00")
-        self.in5.setText(str(I))
-        self.enter5.addWidget(self.txt5)
-        self.enter5.addWidget(self.in5,alignment=QtCore.Qt.AlignRight)
-
-        self.enter6 =  QtWidgets.QHBoxLayout()
-        self.txt6 = QtWidgets.QLabel("Passing yards: ")
-        self.in6 = QtWidgets.QLineEdit()
-        self.in6.setInputMask("0.00")
-        self.in6.setText(str(PY))
-        self.enter6.addWidget(self.txt6)
-        self.enter6.addWidget(self.in6,alignment=QtCore.Qt.AlignRight)
 
         self.layout.addWidget(message)
         self.layout.addLayout(self.enter1)
         self.layout.addLayout(self.enter2)
         self.layout.addLayout(self.enter3)
         self.layout.addLayout(self.enter4)
-        self.layout.addLayout(self.enter5)
-        self.layout.addLayout(self.enter6)
-
         self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
         self.setLayout(self.layout)
 

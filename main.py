@@ -3,38 +3,40 @@ import pandas as pd
 from data_preparation import load_data, create_sequences
 from dataset import PlayerStatsDataset
 from model import RNNModel
-from train import train_model
+from train import ModelTrainer
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
 
-data_val = load_data('combined_passing_2018_2023.csv')
-data = load_data('combined_passing_2012_2017.csv')
-input_size = [col for col in data.columns if col not in ['Fantasy_Points', 'Player', 'Year']].__len__()
-
+#test main 
 def main():
-    X, y = create_sequences(data, 2,'Fantasy_Points')
-    #X_val, y_val = create_sequences(data_val, 2, 'Fantasy_Points')
-    model = RNNModel(input_size, hidden_dim=50, num_layers=2, dropout_prob=0.3)
-    criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    train_loader = DataLoader(PlayerStatsDataset(X, y), batch_size=32, shuffle=True)
-    #val_loader = DataLoader(PlayerStatsDataset(X_val, y_val), batch_size=32, shuffle=False)
-    train_model(model, train_loader, criterion, optimizer, num_epochs=20)
-    torch.save(model.state_dict(), 'model.pth')
+    #print("Pasing")
+    #create_and_train('TrainingData/combined_passing_2006_2017.csv')
+    #print("Rushing")
+    #create_and_train('TrainingData/combined_rushing_2006_2017.csv')
+    #print("Receiving")
+    #create_and_train('TrainingData/combined_receiving_2006_2017.csv')
+    
 
-    model_path = 'model.pth'
-    feature_scaler_path = 'feature_scaler.pkl'
-    target_scaler_path = 'target_scaler.pkl'
-    dataset_path = 'combined_passing_2018_2023.csv'
-    player_name = 'Josh Allen'
+    model_path = 'Models/passing_model.pth'
+    feature_scaler_path = 'Models/passing_feature_scaler.pkl'
+    target_scaler_path = 'Models/passing_target_scaler.pkl'
+    dataset_path = 'TrainingData/combined_passing_2018_2023.csv'
+    player_name = 'Patrick Mahomes'
     seq_length = 2
     model, feature_scaler, target_scaler = load_model_and_scalers(model_path, feature_scaler_path, target_scaler_path)
     predicted_output = predict(model, feature_scaler, target_scaler, dataset_path, player_name, seq_length)
     print("Predicted Output:", predicted_output)
+    pass
 # Make a prediction
 
 def load_model_and_scalers(model_path, feature_scaler_path, target_scaler_path):
+    if "passing" in model_path:
+        input_size = 25
+    elif "rushing" in model_path:
+        input_size = 12
+    elif "receiving" in model_path:
+        input_size = 16
     # Load the trained model
     model = RNNModel(input_size, hidden_dim=50, num_layers=2, dropout_prob=0.3)
     model.load_state_dict(torch.load(model_path))
@@ -75,9 +77,22 @@ def predict(model, feature_scaler, target_scaler, dataset_path, player_name, seq
     
     return prediction.flatten()
 
+def create_and_train(filepath):
+    data = load_data(filepath)
+    input_size = [col for col in data.columns if col not in ['Fantasy_Points', 'Player', 'Year']].__len__()
+    X, y = create_sequences(data, 2,'Fantasy_Points', filepath)
+    model = RNNModel(input_size, hidden_dim=50, num_layers=2, dropout_prob=0.3)
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    train_loader = DataLoader(PlayerStatsDataset(X, y), batch_size=32, shuffle=True)
+    ModelTrainer.train_model(model, train_loader, criterion, optimizer, max_epochs=50)
+    if "passing" in filepath:
+        torch.save(model.state_dict(), 'Models/passing_model.pth')
+    elif "rushing" in filepath:
+        torch.save(model.state_dict(), 'Models/rushing_model.pth')
+    elif "receiving" in filepath:
+        torch.save(model.state_dict(), 'Models/receiving_model.pth')
 
-
-    
 
 if __name__ == '__main__':
     main()

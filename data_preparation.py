@@ -13,7 +13,7 @@ def load_data(filepath):
     data = pd.read_csv(filepath)
     return data
 
-def create_sequences(data, seq_length, target_column): #seq length should always be 2??? 
+def create_sequences(data, seq_length, target_column,filepath): #seq length should always be 2??? 
     feature_columns = [col for col in data.columns if col not in [target_column, 'Player', 'Year']]
     X, y = [], []
     scaler = StandardScaler()
@@ -32,8 +32,16 @@ def create_sequences(data, seq_length, target_column): #seq length should always
         for i in range(len(group) - seq_length):
             X.append(group_values[i:(i + seq_length)])
             y.append(group_labels[i + seq_length])
-    joblib.dump(scaler, 'feature_scaler.pkl')  # Saves the feature scaler
-    joblib.dump(target_scaler, 'target_scaler.pkl')  # Saves the target scaler        
+    if "passing" in filepath:
+        joblib.dump(scaler, 'Models/passing_feature_scaler.pkl')  # Saves the feature scaler
+        joblib.dump(target_scaler, 'Models/passing_target_scaler.pkl')  # Saves the target scaler
+    elif "rushing" in filepath:
+        joblib.dump(scaler, 'Models/rushing_feature_scaler.pkl')  # Saves the feature scaler
+        joblib.dump(target_scaler, 'Models/rushing_target_scaler.pkl')  # Saves the target scaler
+    elif "receiving" in filepath:
+        joblib.dump(scaler, 'Models/receiving_feature_scaler.pkl')  # Saves the feature scaler
+        joblib.dump(target_scaler, 'Models/receiving_target_scaler.pkl')  # Saves the target scaler
+        
 
     return np.array(X), np.array(y)
 

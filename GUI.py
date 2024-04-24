@@ -30,7 +30,7 @@ class MyWidget(QtWidgets.QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.showGrid
         #init, just having it read a file for now
-        self.loadTable(self.table,".\\passing.csv" )
+        self.loadTable(self.table,".\\welcome.csv" )
 
         tables = QtWidgets.QHBoxLayout()
         self.table2 = QtWidgets.QTableWidget()
@@ -139,6 +139,7 @@ class MyWidget(QtWidgets.QWidget):
                 #nested loop
                 for colIdx, colData in enumerate(rowData):
                     table.setItem(rowIdx-offset,colIdx,QtWidgets.QTableWidgetItem(colData))
+            table.resizeColumnsToContents()        
 class ArchivedDataPopup(QtWidgets.QDialog):
 
     def __init__(self,UsePred):

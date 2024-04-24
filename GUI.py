@@ -123,13 +123,12 @@ class MyWidget(QtWidgets.QWidget):
             self.writeScoringConfig(dlg.in1.text(),dlg.in2.text(),dlg.in3.text(),dlg.in4.text(),dlg.in5.text(),dlg.in6.text())
 
     def arcPopup(self):
-        print(self.TableTitle.text())
-        dlg = ArchivedDataPopup(True if self.TableTitle.text() == "Predictions for next year" else False)
+        dlg = ArchivedDataPopup(True if self.TableTitleLeft.text() == "Predictions for next year" else False)
         dlg.exec()
         if(dlg.accepted):
             if(dlg.usePred.isChecked()):
                #load predictions result
-               self.TableTitle.setText("Predictions for next year")
+               self.TableTitleLeft.setText("Predictions for next year")
             else:
                 #load archived data that was selected
                 self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.year+"\\"+dlg.dataset+".csv")

@@ -3,7 +3,9 @@ import requests
 import os,pathlib
 import pandas as pd
 import numpy as np
-
+"""
+Class is used to webscrape the expert consensus page at fantasypros 
+"""
 class WebscraperExperts:
 
     def __init__(self, url, id):

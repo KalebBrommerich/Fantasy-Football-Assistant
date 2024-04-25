@@ -4,6 +4,19 @@ import pandas as pd
 data_prep_prep file
 This file is used to clean the data before it is used in the prediction model classes,
 it requires more data work to be able to predict, but this is a good clean start that can be understood by the user. 
+
+functions here include
+
+remove repeated headers
+calculate fantasy points
+convert percent to float
+round dataframe
+
+the above are all self-explanatory
+
+process and merge is a long function which uses the above as helpers to process the data and merge it into larger datasets, these are used by data_preperation to create the sequences
+
+
 """
 
 def remove_repeated_headers(df):
@@ -30,7 +43,8 @@ def calculate_fantasy_points(df, file_path):
     elif 'rushing' in file_path:
         df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6 
     elif 'receiving' in file_path:
-        df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6
+        df['Rec'] = pd.to_numeric(df['Rec'], errors='coerce')
+        df['Fantasy_Points'] = df['Yds'] / 10 + df['TD'] * 6 + df['Rec'] * 0.5
     return df
 
 def convert_percent_to_float(df):
@@ -60,18 +74,22 @@ def process_and_merge(files_and_years,years):
         df = pd.read_csv(file_path) #Read CSV
         df = remove_repeated_headers(df) #Remove Headers
         df = convert_percent_to_float(df) #Convert percentage columns to float
+        df = calculate_fantasy_points(df, file_path) #Calculate Fantasy Points
         df['Year'] = year #Add year column
 
         if 'passing' in file_path: #If passing, then filter out bad passing columns and filter for QB
             df = df[df['Pos'] == 'QB']
             df.drop(['4QC', 'GWD', 'QBrec',], axis=1, inplace=True)
+            df = df.loc[df['Fantasy_Points'] >= 100] #Filter out players with less than 100 attempts, these outliers break the MinMaxScaler
         if 'rushing' in file_path: #If rushing, then for filter for RB
             df = df[df['Pos'] == 'RB']
+            df = df.loc[df['Fantasy_Points'] >= 50]
+        if 'receiving' in file_path:
+            df = df.loc[df['Fantasy_Points'] >= 50]
 
         df.drop(['Pos', 'Tm', 'Rk'], axis=1, inplace=True) #Drop string based columns (they dont help in prediction)
         df = df.dropna() #Drop rows with missing values
-        df = calculate_fantasy_points(df, file_path) #Calculate Fantasy Points
-        df = df.loc[df['Fantasy_Points'] >= 100] #Filter out players with less than 100 fantasy points, these outliers break the MinMaxScaler
+        #df = df.loc[df['Fantasy_Points'] >= 100] #Filter out players with less than 100 fantasy points, these outliers break the MinMaxScaler
         df = round_dataframe(df) #Round all numeric columns to 3 decimal places, maybe not important, but it looks nice
 
         df['Player'] = df['Player'].str.replace(r'[\*\+]', '', regex=True)  # Remove special characters from player names

@@ -3,6 +3,11 @@ import requests
 import os,pathlib
 import pandas as pd
 
+"""
+class is used to scrape the pro-football-reference website for the data needed to predict fantasy points
+"""
+
+
 class Webscraper:
 
     def __init__(self, url, id):

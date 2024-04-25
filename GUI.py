@@ -31,7 +31,7 @@ class MyWidget(QtWidgets.QWidget):
 
         #table titles
         self.EnterModifiersBtn = QtWidgets.QPushButton("Enter modifiers") 
-        self.TableTitleLeft = QtWidgets.QLabel("Predictions for next year")
+        self.TableTitleLeft = QtWidgets.QLabel("Welcome")
         self.TableTitleRight = QtWidgets.QLabel("Expert consensus")
         
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -126,6 +126,7 @@ class MyWidget(QtWidgets.QWidget):
         time.sleep(1)
     def genRankings(self):
         main.create_ranking()
+        self.TableTitleLeft.setText("Predictions for next year")
         self.loadTable(self.table,".\\gen_rankings.csv" )
 
     #Popup for entering scoring settings
@@ -138,6 +139,9 @@ class MyWidget(QtWidgets.QWidget):
         if(dlg.accepted):
             self.writeScoringConfig(dlg.in1.text(),dlg.in2.text(),dlg.in3.text(),dlg.in4.text(),dlg.in5.text(),dlg.in6.text())
 
+
+
+
     def arcPopup(self):
         dlg = ArchivedDataPopup()
         dlg.exec()
@@ -145,7 +149,6 @@ class MyWidget(QtWidgets.QWidget):
                 #load archived data that was selected
                 self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.in1.currentText()+"\\"+dlg.in2.currentText()+".csv")
                 self.TableTitleLeft.setText(dlg.in1.currentText()+ " " + dlg.in2.currentText())
-
 
             
     #read table into GUI table viewer
@@ -197,11 +200,12 @@ class MyWidget(QtWidgets.QWidget):
 class ArchivedDataPopup(QtWidgets.QDialog):
 
     def __init__(self):
+        self.accepted =False
         super().__init__()
 
         #setup basic modal stuff
         QBtn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
-
+        self.setWindowTitle("Archive selection")
         self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
@@ -237,12 +241,21 @@ class ArchivedDataPopup(QtWidgets.QDialog):
         self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
         
         self.setLayout(self.layout)
+    def accept(self) -> None:
+        self.accepted = True
+        return super().accept()
+    def reject(self) -> None:
+        return super().reject()
+
+
 
 
 class ModifiersPopup(QtWidgets.QDialog):
-    def __init__(self,RRTD,RRYD,PTD,PPR,I,PY):
-        super().__init__()
 
+    def __init__(self,RRTD,RRYD,PTD,PPR,I,PY):
+        self.accepted = False
+        super().__init__()
+    
         #setup basic modal stuff
         self.setWindowTitle("Point Modifiers")
 
@@ -319,6 +332,11 @@ class ModifiersPopup(QtWidgets.QDialog):
 
         self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
         self.setLayout(self.layout)
+    def accept(self) -> None:
+        self.accepted = True
+        return super().accept()
+    def reject(self) -> None:
+        return super().reject()
         
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

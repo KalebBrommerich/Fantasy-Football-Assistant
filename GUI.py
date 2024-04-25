@@ -139,18 +139,12 @@ class MyWidget(QtWidgets.QWidget):
             self.writeScoringConfig(dlg.in1.text(),dlg.in2.text(),dlg.in3.text(),dlg.in4.text(),dlg.in5.text(),dlg.in6.text())
 
     def arcPopup(self):
-        #inline check to see what is currently being displayed to preselect radio button
-        dlg = ArchivedDataPopup(True if self.TableTitleLeft.text() == "Predictions for next year" else False)
+        dlg = ArchivedDataPopup()
         dlg.exec()
         if(dlg.accepted):
-                #if seeing predictions checked, load predictions for next year, else load selected archived data
-                if(dlg.usePred.isChecked()):
-                    #load predictions result
-                    self.TableTitleLeft.setText("Predictions for next year")
-                else:
-                    #load archived data that was selected
-                    self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.in1.currentText()+"\\"+dlg.in2.currentText()+".csv")
-                    self.TableTitleLeft.setText(dlg.in1.currentText()+ " " + dlg.in2.currentText())
+                #load archived data that was selected
+                self.loadTable(self.table,os.curdir+"\\TrainingData"+"\\"+dlg.in1.currentText()+"\\"+dlg.in2.currentText()+".csv")
+                self.TableTitleLeft.setText(dlg.in1.currentText()+ " " + dlg.in2.currentText())
 
 
             
@@ -202,7 +196,7 @@ class MyWidget(QtWidgets.QWidget):
 
 class ArchivedDataPopup(QtWidgets.QDialog):
 
-    def __init__(self,UsePred):
+    def __init__(self):
         super().__init__()
 
         #setup basic modal stuff
@@ -236,21 +230,10 @@ class ArchivedDataPopup(QtWidgets.QDialog):
         self.enter2.addWidget(self.txt2)
         self.enter2.addWidget(self.in2)
 
-        #setup radio buttons, PySide automatically groups them
-        self.usePred = QtWidgets.QRadioButton("Display predictions for next year", self)
-        self.useArchived = QtWidgets.QRadioButton("Display archived data", self)
-        #preselect a button based on current settings
-        if(UsePred):
-            self.usePred.setChecked(True)
-        else:
-            self.useArchived.setChecked(True)
-
         #add everything to the popup
         self.layout.addWidget(message)
         self.layout.addLayout(self.enter1)
         self.layout.addLayout(self.enter2)
-        self.layout.addWidget(self.usePred,alignment=QtCore.Qt.AlignLeft)
-        self.layout.addWidget(self.useArchived,alignment=QtCore.Qt.AlignLeft)
         self.layout.addWidget(self.buttonBox,alignment=QtCore.Qt.AlignCenter)
         
         self.setLayout(self.layout)

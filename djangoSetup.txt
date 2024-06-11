@@ -1,0 +1,11 @@
+run this => pip install virtualenv
+then this => virtualenv env
+run these (also install the rest of the packages incase they aren't already in the virtualenv) => pip install django
+then this but shouldn't need to cause in this project I ran it already => django-admin startproject FFAssistant 
+same as above => python manage.py startapp myapp
+to start web server do this =>cd .\FFAssistant     
+then this => python manage.py runserver
+terminate virtualenv by running => deactivate
+
+To run any python files in the virtualenv you need to do it manually in terminal (python GUI.py)
+start virtualenv again by running .\env\Scripts\activate in root dir

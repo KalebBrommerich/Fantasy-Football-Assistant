@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side by Side Tables</title>
+    {% load static %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'CSS/home.css' %}">
+</head>
+</head>
+<body>
+    <div class="table-container">
+        <table id="table1">
+            <thead>
+                <tr>
+                    {% for header in table1.headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for row in table1.rows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+        <table id="table2">
+            <thead>
+                <tr>
+                    {% for header in table2.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for row in table2.rows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script src="{% static 'JS/home.js' %}"></script>
+</body>
+</html>
